@@ -105,24 +105,23 @@ func InstallFeed(_ context.Context, feedURL string, opts InstallFeedOptions) err
 		return err
 	}
 
-	if opts.UseCache && cache.FeedArchiveExists(feedURL) {
-		fmt.Fprintf(os.Stderr, "Feed %s is already installed.\n", feedURL)
-		return nil
-	}
+	var feed *Feed
+	if !opts.UseCache || !cache.FeedArchiveExists(feedURL) {
+		fmt.Fprintf(os.Stderr, "Downloading feed: %s\n", feedURL)
+		feed, err = fetchFeed(feedURL)
+		if err != nil {
+			return err
+		}
+		archive, err := fetchFeedArchive(feed, opts.VerificationMethod)
+		if err != nil {
+			return fmt.Errorf("failed to verify feed: %w. aborting", err)
+		}
 
-	fmt.Fprintf(os.Stderr, "Loading feed: %s\n", feedURL)
-	feed, err := fetchFeed(feedURL)
-	if err != nil {
-		return err
-	}
-
-	archive, err := fetchFeedArchive(feed, opts.VerificationMethod)
-	if err != nil {
-		return fmt.Errorf("failed to verify feed: %w. aborting", err)
-	}
-
-	if err := cache.WriteFeedArchive(feedURL, feed, archive, 0755); err != nil {
-		return fmt.Errorf("failed to cache feed archive: %w. aborting", err)
+		if err := cache.WriteFeedArchive(feedURL, feed, archive, 0755); err != nil {
+			return fmt.Errorf("failed to cache feed archive: %w. aborting", err)
+		}
+	} else {
+		fmt.Fprintf(os.Stderr, "Loading feed %s from cache\n", feedURL)
 	}
 
 	archivePath, _ := cache.GetFeedArchive(feedURL)
@@ -134,7 +133,8 @@ func InstallFeed(_ context.Context, feedURL string, opts InstallFeedOptions) err
 }
 
 func installArchive(archivePath string) error {
-	files, err := extract(archivePath)
+	dir := removeFileExtension(archivePath)
+	files, err := extract(archivePath, dir)
 	if err != nil {
 		return err
 	}
@@ -152,11 +152,19 @@ func installArchive(archivePath string) error {
 		}
 		for _, p := range nf.Platforms {
 			if p.Name == currentPlatform() {
+				fmt.Fprintf(os.Stderr, "Running %v", p.InstallCommand)
 				cmd := exec.Command(p.InstallCommand[0], p.InstallCommand[1:]...)
+				cmd.Dir = dir
 				cmd.Stdin = os.Stdin
 				cmd.Stderr = os.Stderr
 				cmd.Stdout = os.Stdout
-				return cmd.Run()
+				if err := cmd.Run(); err != nil {
+					return err
+				}
+				if cmd.ProcessState.ExitCode() != 0 {
+					return fmt.Errorf("process exited with code: %d", cmd.ProcessState.ExitCode())
+				}
+				return nil
 			}
 		}
 		return fmt.Errorf("cannot install the archive on this platform: %q", currentPlatform())

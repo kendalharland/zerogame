@@ -12,19 +12,8 @@ import (
 	"github.com/maruel/subcommands"
 )
 
-// TODO: Tests!
-// TODO: supply stdin, stdout, stderr to make testing easier.
-// TODO: Prefix prompts with "Enter a..."
-// TODO: Capitalize and proofread all command helptext.
-// TODO: Add a GUI for installation
-// TODO: Add a readme with quickstart instructions for both publishers and subscribers.
-
 const (
 	defaultFeedPath = "feed.json"
-)
-
-var (
-	supportedArchiveTypes = []string{"zip"}
 )
 
 func CmdFeed() *subcommands.Command {

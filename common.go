@@ -52,11 +52,11 @@ func replaceFileExtension(filename, extension string) string {
 	return filename[0:len(filename)-len(filepath.Ext(filename))] + "." + extension
 }
 
-func extract(path string) (files []string, err error) {
-	if filepath.Ext(path) != ".zip" {
+func extract(src, dst string) (files []string, err error) {
+	if filepath.Ext(src) != ".zip" {
 		return nil, errors.New("only zip archives are supported")
 	}
-	return unzip(path, removeFileExtension(path))
+	return unzip(src, dst)
 }
 
 func unzip(src, dest string) ([]string, error) {

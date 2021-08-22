@@ -58,7 +58,7 @@ $ zerogame feed
 Enter the feed name: my_game
 Enter the feed version: 1.0
 Enter the feed archive URL: https://www.dropbox.com/s/awg98awe9g7/mygame.zip?dl=1        
-Enter the URL to the detached GPG signature: https://www.dropbox.com/s/awg98awe9g7/mygame.zip.sig?dl=1
+Enter the GPG signature URL (optional): https://www.dropbox.com/s/awg98awe9g7/mygame.zip.sig?dl=1
 Feed was written to feed.json!
 ```
 
