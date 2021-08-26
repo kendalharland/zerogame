@@ -94,12 +94,11 @@ func (c *cmdFeed) getFeedProperties(p *prompt, f *zerogame.Feed) error {
 		return err
 	}
 	f.ArchiveURL = archiveURL
-	f.ArchiveType = "zip"
 
-	gpgSignatureURL, err := p.ReadString("Enter the GPG signature URL (optional): ")
+	isSigned, err := p.ReadOneOf("Is the archive signed with a gpg key?: ", "y", "n")
 	if err != nil {
 		return err
 	}
-	f.GPGSignatureURL = gpgSignatureURL
+	f.IsArchiveSigned = isSigned == "y"
 	return nil
 }

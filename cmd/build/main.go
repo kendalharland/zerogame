@@ -27,7 +27,7 @@ type BuildConfig struct {
 func main() {
 	version := flag.String("v", "", "Release version string")
 	dst := flag.String("o", "bin", "Build output directory")
-	src := flag.String("i", filepath.Join("cmd", "zg"), "Source directory")
+	src := flag.String("i", filepath.Join("cmd", "cli"), "Source directory")
 	gobin := flag.String("go", "/usr/bin/go", "Optional path to the go binary")
 
 	flag.Parse()
@@ -82,9 +82,6 @@ func build(conf BuildConfig, version, src, dst, gobin string) error {
 		Stderr: os.Stderr,
 		Env:    os.Environ(),
 	}
-
-	//cmd.Env = append(cmd.Env, "GOOS", conf.GOOS)
-	//cmd.Env = append(cmd.Env, "GOARCH", conf.GOARCH)
 
 	fmt.Fprintf(os.Stderr, "Running %v\n", cmd.Args)
 	return cmd.Run()

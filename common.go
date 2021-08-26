@@ -2,7 +2,7 @@ package zerogame
 
 import (
 	"archive/zip"
-	"errors"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,7 +18,7 @@ func currentPlatform() string {
 	return runtime.GOOS
 }
 
-func getURL(u string) ([]byte, error) {
+func getURL(client *http.Client, u string) ([]byte, error) {
 	parsedURL, err := url.Parse(u)
 	if err != nil {
 		return nil, err
@@ -27,12 +27,6 @@ func getURL(u string) ([]byte, error) {
 	case "file":
 		return ioutil.ReadFile(u[7:])
 	case "http", "https":
-		client := &http.Client{
-			CheckRedirect: func(r *http.Request, via []*http.Request) error {
-				r.URL.Opaque = r.URL.Path
-				return nil
-			},
-		}
 		res, err := client.Get(u)
 		if err != nil {
 			return nil, err
@@ -44,19 +38,20 @@ func getURL(u string) ([]byte, error) {
 	}
 }
 
-func removeFileExtension(filename string) string {
-	return filename[0 : len(filename)-len(filepath.Ext(filename))]
+func getFeed(client *http.Client, url string) (*Feed, error) {
+	js, err := getURL(client, url)
+	if err != nil {
+		return nil, err
+	}
+	feed := &Feed{}
+	if err := json.Unmarshal(js, feed); err != nil {
+		return nil, err
+	}
+	return feed, nil
 }
 
 func replaceFileExtension(filename, extension string) string {
 	return filename[0:len(filename)-len(filepath.Ext(filename))] + "." + extension
-}
-
-func extract(src, dst string) (files []string, err error) {
-	if filepath.Ext(src) != ".zip" {
-		return nil, errors.New("only zip archives are supported")
-	}
-	return unzip(src, dst)
 }
 
 func unzip(src, dest string) ([]string, error) {

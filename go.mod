@@ -12,6 +12,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.4.2 // indirect
 	github.com/texttheater/golang-levenshtein v1.0.1 // indirect
+	github.com/webview/webview v0.0.0-20210330151455-f540d88dde4e
 	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect

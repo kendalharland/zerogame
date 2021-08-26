@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/kendalharland/zerogame"
 	"github.com/maruel/subcommands"
@@ -16,8 +18,8 @@ func CmdInstall() *subcommands.Command {
 		LongDesc:  "installs an archive from a feed URL",
 		CommandRun: func() subcommands.CommandRun {
 			c := &cmdInstall{}
-			c.Flags.BoolVar(&c.disableVerification, "noverify", false, "Disables Feed verification")
-			c.Flags.BoolVar(&c.disableCache, "nocache", false, "Forces downloading the feed even if it exists locally")
+			c.Flags.BoolVar(&c.noVerify, "noverify", false, "Disables Feed verification")
+			c.Flags.BoolVar(&c.noCache, "nocache", false, "Forces downloading the feed even if it exists locally")
 			return c
 		},
 	}
@@ -26,8 +28,8 @@ func CmdInstall() *subcommands.Command {
 type cmdInstall struct {
 	subcommands.CommandRunBase
 
-	disableVerification bool
-	disableCache        bool
+	noVerify bool
+	noCache  bool
 }
 
 func (c *cmdInstall) Run(a subcommands.Application, _ []string, _ subcommands.Env) int {
@@ -42,12 +44,11 @@ func (c *cmdInstall) execute(ctx context.Context) error {
 	if c.Flags.NArg() != 1 {
 		return errors.New("expected one argument")
 	}
-	opts := zerogame.InstallFeedOptions{
-		UseCache:           !c.disableCache,
-		VerificationMethod: zerogame.AutoSelectMethod,
-	}
-	if c.disableVerification {
-		opts.VerificationMethod = zerogame.DoNotVerifyMethod
-	}
-	return zerogame.InstallFeed(ctx, c.Flags.Arg(0), opts)
+
+	home, _ := os.UserHomeDir()
+	workspace := filepath.Join(home, ".config", "zerogame")
+	db := zerogame.NewFeedRecordDB(filepath.Join(workspace, "db"))
+	repo := zerogame.NewFeedRepository(workspace, db)
+
+	return zerogame.InstallFeed(ctx, c.Flags.Arg(0), repo)
 }

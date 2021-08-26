@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/ProtonMail/go-crypto/openpgp"
 	"github.com/ProtonMail/gopenpgp/v2/crypto"
@@ -19,6 +20,19 @@ const gpgKeyDir = ".gnupg"
 var keyRingPaths = []string{
 	"pubring.gpg",
 	"pubring.kbx",
+}
+
+func pgpDecrypt(message []byte) ([]byte, error) {
+	kr, err := readDefaultKeyRing()
+	if err != nil {
+		return nil, err
+	}
+	m := crypto.NewPGPMessage(message)
+	d, err := kr.Decrypt(m, nil, time.Now().UnixNano())
+	if err != nil {
+		return nil, err
+	}
+	return d.Data, nil
 }
 
 func showKeyBoxWarning(keyBoxFile, wantKeyRingFile string) {

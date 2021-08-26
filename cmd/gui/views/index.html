@@ -1,0 +1,23 @@
+<script>
+    function log(message) {
+        const target = document.getElementById("log");
+        target.value = target.value.concat(message, "\n");
+    }
+    
+    function install() {
+        var url = document.getElementById("feed-url").value;
+        var noCache = document.getElementById("no-cache").checked;
+        zg_install_feed(url, noCache).catch(log);
+    }
+</script>
+
+<table>
+    <tr><label for="feed-url">Enter a feed URL</label><br>
+        <input id="feed-url" size=50>
+        <label for="no-cache">Disable cache</label><br>
+        <input id="no-cache" type="checkbox">
+        <button onclick="install()">Install</button><br>
+    </tr>
+    <tr><text>Logs</text><br></tr>
+    <tr><textarea id="log" rows=30 cols=80 readonly></textarea></tr>
+</table>
